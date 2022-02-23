@@ -1,0 +1,11 @@
+modLoader="javafml"
+loaderVersion="[39,)"
+license="MIT"
+
+[[mods]]
+	modId="scwikiizer"
+	version="${file.jarVersion}"
+	displayName="SecurityCraft Wikiizer"
+	description='''Generates a GitHub wiki from SecurityCraft's ingame manual.'''
+	credits=""
+	authors="bl4ckscor3"
