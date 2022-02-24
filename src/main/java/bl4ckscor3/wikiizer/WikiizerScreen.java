@@ -74,8 +74,8 @@ public class WikiizerScreen extends Screen {
 		super(new TextComponent("SecurityCraft Wikiizer"));
 
 		SCManualItem.PAGES.sort((page1, page2) -> {
-			String key1 = Utils.localize(page1.item().getDescriptionId()).getString();
-			String key2 = Utils.localize(page2.item().getDescriptionId()).getString();
+			String key1 = page1.title().getString();
+			String key2 = page2.title().getString();
 
 			return key1.compareTo(key2);
 		});
@@ -435,7 +435,6 @@ public class WikiizerScreen extends Screen {
 					"",
 					"## Pages",
 					""));
-			pages.sort(String::compareTo);
 			homePage.addAll(pages);
 			FileUtils.writeLines(new File(OUTPUT_FOLDER, "Home.md"), homePage);
 			FileUtils.writeLines(new File(OUTPUT_FOLDER, "_Footer.md"), List.of(
