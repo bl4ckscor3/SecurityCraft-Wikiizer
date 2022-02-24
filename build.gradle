@@ -57,7 +57,7 @@ repositories {
 
 dependencies {
     minecraft 'net.minecraftforge:forge:1.18.1-39.0.85'
-    implementation fg.deobf("curse.maven:securitycraft-64760:3577168")
+    //implementation fg.deobf("curse.maven:securitycraft-64760:3577168")
 }
 
 jar {

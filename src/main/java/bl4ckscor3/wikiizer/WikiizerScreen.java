@@ -5,15 +5,17 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 
+import net.geforcemods.securitycraft.SCContent;
 import net.geforcemods.securitycraft.SecurityCraft;
 import net.geforcemods.securitycraft.api.ICustomizable;
 import net.geforcemods.securitycraft.api.IExplosive;
@@ -25,10 +27,10 @@ import net.geforcemods.securitycraft.api.IViewActivated;
 import net.geforcemods.securitycraft.api.Option;
 import net.geforcemods.securitycraft.items.SCManualItem;
 import net.geforcemods.securitycraft.misc.ModuleType;
+import net.geforcemods.securitycraft.misc.PageGroup;
 import net.geforcemods.securitycraft.misc.SCManualPage;
 import net.geforcemods.securitycraft.util.Utils;
 import net.minecraft.DetectedVersion;
-import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
@@ -50,29 +52,23 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.client.gui.widget.ExtendedButton;
 
 public class WikiizerScreen extends Screen {
-	private static final Logger LOGGER = LogManager.getLogger();
 	private static final String SC_VERSION = SecurityCraft.getVersion();
 	private static final String MC_VERSION = DetectedVersion.BUILT_IN.getName();
 	private static final File OUTPUT_FOLDER = new File(Minecraft.getInstance().gameDirectory, "scwikiizer");
 	private static final File RESOURCES_FOLDER = new File(OUTPUT_FOLDER, "resources");
 	private static final ResourceLocation CRAFTING_GRID_TEXTURE = new ResourceLocation("scwikiizer", "textures/gui/crafting_grid.png");
 	//@formatter:off
-	private final List<String> homePage = Util.make(new ArrayList<>(), list -> list.addAll(Arrays.asList(
-			"# SecurityCraft Wiki",
-			"",
-			String.format(
-					"This wiki is generated from the mod's ingame manual. While it was created using SecurityCraft %s for Minecraft %s, most of the content applies to the mod in other Minecraft versions, or other versions of SecurityCraft.  ",
-					SC_VERSION,
-					MC_VERSION),
-			"All the information in this wiki can also be found in the ingame SecurityCraft Manual. You can get it by crafting a book together with iron bars. Do note, that it may visualize some information (like recipes) better than this wiki.",
-			"",
-			"## Pages",
-			"")));
+	private final List<String> pages = new ArrayList<>();
 	//@formatter:on
 	private boolean isRunning = false;
-	private int currentPage = 0;
+	private int previousPageIndex = 0;
+	private int currentPageIndex = 0;
 	private Button startStopButton;
-	private NonNullList<ItemStack> recipeItems;
+	private SimpleIngredientDisplay[] displays = new SimpleIngredientDisplay[9];
+	private SimpleIngredientDisplay resultDisplay;
+	private boolean isCreatingGif = false;
+	private int currentGroupItemIndex = 0;
+	private List<File> gifImageFiles = new ArrayList<>();
 
 	public WikiizerScreen() {
 		super(new TextComponent("SecurityCraft Wikiizer"));
@@ -91,7 +87,16 @@ public class WikiizerScreen extends Screen {
 
 		addRenderableWidget(new ExtendedButton(5, 5, 20, 20, new TextComponent("<-"), b -> Minecraft.getInstance().setScreen(null)));
 		startStopButton = addRenderableWidget(new ExtendedButton(30, 5, 50, 20, new TextComponent("Start"), b -> changeRunningStatus(!isRunning)));
+
+		for (int i = 0; i < 3; i++) {
+			for (int j = 0; j < 3; j++) {
+				displays[(i * 3) + j] = new SimpleIngredientDisplay(106 + j * 18, 106 + i * 18);
+			}
+		}
+
+		resultDisplay = new SimpleIngredientDisplay(200, 124);
 		reset();
+		refreshOutputFolder();
 	}
 
 	@Override
@@ -101,97 +106,210 @@ public class WikiizerScreen extends Screen {
 		super.render(pose, mouseX, mouseY, partialTick);
 
 		if (isRunning) {
-			if (currentPage >= SCManualItem.PAGES.size()) {
+			if (currentPageIndex >= SCManualItem.PAGES.size()) {
 				finalizeWiki();
 				reset();
-				changeRunningStatus(false);
 			}
 			else {
-				SCManualPage page = SCManualItem.PAGES.get(currentPage);
+				SCManualPage currentPage = SCManualItem.PAGES.get(currentPageIndex);
 
-				renderRecipe(page, pose);
-				createAndSavePage(page);
-				currentPage++;
+				renderRecipe(currentPage, pose, mouseX, mouseY, partialTick);
+
+				if (!currentPage.group().hasRecipeGrid()) {
+					createAndSavePage(currentPage);
+					currentPageIndex++;
+				}
+				else if (!isCreatingGif)
+					initiateGifCreation(currentPage);
+
+				if (isCreatingGif) {
+					createRecipeScreenshot(currentPage, "" + currentGroupItemIndex);
+
+					if (++currentGroupItemIndex >= currentPage.group().getItems().getItems().length) {
+						createAndSavePage(currentPage);
+						currentPageIndex++;
+						isCreatingGif = false;
+					}
+				}
 			}
 		}
 
 		drawCenteredString(pose, font, title, width / 2, 15, 0xFFFFFF);
 	}
 
-	private void renderRecipe(SCManualPage currentPage, PoseStack pose) {
-		populateRecipeField(currentPage.item());
+	private void renderRecipe(SCManualPage currentPage, PoseStack pose, int mouseX, int mouseY, float partialTick) {
+		if (previousPageIndex != currentPageIndex) {
+			if (!currentPage.hasRecipeDescription())
+				populateRecipeField(currentPage);
+
+			previousPageIndex = currentPageIndex;
+		}
+
 		RenderSystem._setShaderTexture(0, CRAFTING_GRID_TEXTURE);
 		blit(pose, 100, 100, 0, 0, 126, 64, 126, 64);
 
-		for (int i = 0; i < 3; i++) {
-			for (int j = 0; j < 3; j++) {
-				Minecraft.getInstance().getItemRenderer().renderAndDecorateItem(recipeItems.get((i * 3 + j)), 106 + j * 18, 106 + i * 18);
+		for (SimpleIngredientDisplay display : displays) {
+			display.render(pose, mouseX, mouseY, partialTick);
+		}
+
+		resultDisplay.render(pose, mouseX, mouseY, partialTick);
+	}
+
+	private void populateRecipeField(SCManualPage currentPage) {
+		NonNullList<Ingredient> recipeIngredients = NonNullList.withSize(9, Ingredient.EMPTY);
+		Item item = currentPage.item();
+		PageGroup pageGroup = currentPage.group();
+
+		for (SimpleIngredientDisplay display : displays) {
+			display.setIngredient(Ingredient.EMPTY);
+		}
+
+		resultDisplay.setIngredient(Ingredient.EMPTY);
+
+		if (pageGroup == PageGroup.NONE) {
+			for (Recipe<?> object : Minecraft.getInstance().level.getRecipeManager().getRecipes()) {
+				if (object instanceof ShapedRecipe recipe) {
+					if (recipe.getResultItem().getItem() == item) {
+						NonNullList<Ingredient> ingredients = recipe.getIngredients();
+						NonNullList<Ingredient> recipeItems = NonNullList.<Ingredient> withSize(9, Ingredient.EMPTY);
+
+						for (int i = 0; i < ingredients.size(); i++) {
+							recipeItems.set(getCraftMatrixPosition(i, recipe.getWidth(), recipe.getHeight()), ingredients.get(i));
+						}
+
+						recipeIngredients = recipeItems;
+						break;
+					}
+				}
+				else if (object instanceof ShapelessRecipe recipe) {
+					if (recipe.getResultItem().getItem() == item) {
+						//don't show keycard reset recipes
+						if (recipe.getId().getPath().endsWith("_reset"))
+							continue;
+
+						NonNullList<Ingredient> recipeItems = NonNullList.<Ingredient> withSize(recipe.getIngredients().size(), Ingredient.EMPTY);
+
+						for (int i = 0; i < recipeItems.size(); i++) {
+							recipeItems.set(i, recipe.getIngredients().get(i));
+						}
+
+						recipeIngredients = recipeItems;
+						break;
+					}
+				}
+			}
+		}
+		else if (pageGroup.hasRecipeGrid()) {
+			Map<Integer, ItemStack[]> recipeStacks = new HashMap<>();
+			List<Item> pageItems = Arrays.stream(pageGroup.getItems().getItems()).map(ItemStack::getItem).toList();
+			int stacksLeft = pageItems.size();
+
+			for (int i = 0; i < 9; i++) {
+				recipeStacks.put(i, new ItemStack[pageItems.size()]);
+			}
+
+			for (Recipe<?> object : Minecraft.getInstance().level.getRecipeManager().getRecipes()) {
+				if (stacksLeft == 0)
+					break;
+
+				if (object instanceof ShapedRecipe recipe) {
+					if (!recipe.getResultItem().isEmpty() && pageItems.contains(recipe.getResultItem().getItem())) {
+						NonNullList<Ingredient> ingredients = recipe.getIngredients();
+
+						for (int i = 0; i < ingredients.size(); i++) {
+							ItemStack[] items = ingredients.get(i).getItems();
+
+							if (items.length == 0)
+								continue;
+
+							int indexToAddAt = pageItems.indexOf(recipe.getResultItem().getItem());
+
+							//first item needs to suffice since multiple recipes are being cycled through
+							recipeStacks.get(getCraftMatrixPosition(i, recipe.getWidth(), recipe.getHeight()))[indexToAddAt] = items[0];
+						}
+
+						stacksLeft--;
+					}
+				}
+				else if (object instanceof ShapelessRecipe recipe) {
+					if (!recipe.getResultItem().isEmpty() && pageItems.contains(recipe.getResultItem().getItem())) {
+						//don't show keycard reset recipes
+						if (recipe.getId().getPath().endsWith("_reset"))
+							continue;
+
+						NonNullList<Ingredient> ingredients = recipe.getIngredients();
+
+						for (int i = 0; i < ingredients.size(); i++) {
+							ItemStack[] items = ingredients.get(i).getItems();
+
+							if (items.length == 0)
+								continue;
+
+							int indexToAddAt = pageItems.indexOf(recipe.getResultItem().getItem());
+
+							//first item needs to suffice since multiple recipes are being cycled through
+							recipeStacks.get(i)[indexToAddAt] = items[0];
+						}
+
+						stacksLeft--;
+					}
+				}
+			}
+
+			recipeIngredients = NonNullList.withSize(9, Ingredient.EMPTY);
+
+			for (Entry<Integer, ItemStack[]> entry : recipeStacks.entrySet()) {
+				int i = entry.getKey();
+				ItemStack[] stackArray = entry.getValue();
+
+				recipeIngredients.set(i, Ingredient.of(Arrays.stream(stackArray).map(s -> s == null ? ItemStack.EMPTY : s)));
 			}
 		}
 
-		Minecraft.getInstance().getItemRenderer().renderAndDecorateItem(new ItemStack(currentPage.item()), 200, 124);
-	}
+		if (recipeIngredients.size() > 0) {
+			for (int i = 0; i < 3; i++) {
+				for (int j = 0; j < 3; j++) {
+					int index = (i * 3) + j;
 
-	private void populateRecipeField(Item item) {
-		recipeItems = NonNullList.withSize(9, ItemStack.EMPTY);
-
-		for (Recipe<?> object : Minecraft.getInstance().level.getRecipeManager().getRecipes()) {
-			if (object instanceof ShapedRecipe recipe) {
-				if (item == recipe.getResultItem().getItem()) {
-					NonNullList<Ingredient> ingredients = recipe.getIngredients();
-
-					for (int i = 0; i < ingredients.size(); i++) {
-						ItemStack[] items = ingredients.get(i).getItems();
-
-						if (items.length == 0)
-							continue;
-
-						recipeItems.set(getCraftMatrixPosition(i, recipe.getWidth(), recipe.getHeight()), items[0]);
-					}
-
-					return;
+					if (index >= recipeIngredients.size())
+						displays[index].setIngredient(Ingredient.EMPTY);
+					else
+						displays[index].setIngredient(recipeIngredients.get(index));
 				}
 			}
-			else if (object instanceof ShapelessRecipe recipe) {
-				if (item == recipe.getResultItem().getItem()) {
-					//don't show keycard reset recipes
-					if (recipe.getId().getPath().endsWith("_reset"))
-						continue;
 
-					NonNullList<Ingredient> ingredients = recipe.getIngredients();
-
-					for (int i = 0; i < ingredients.size(); i++) {
-						ItemStack[] items = ingredients.get(i).getItems();
-
-						if (items.length == 0)
-							continue;
-
-						recipeItems.set(i, items[0]);
-					}
-
-					return;
-				}
+			if (currentPage.group().getItems().isEmpty())
+				resultDisplay.setIngredient(Ingredient.of(currentPage.item()));
+			else
+				resultDisplay.setIngredient(currentPage.group().getItems());
+		}
+		else {
+			for (SimpleIngredientDisplay display : displays) {
+				display.setIngredient(Ingredient.EMPTY);
 			}
+
+			resultDisplay.setIngredient(Ingredient.EMPTY);
 		}
 	}
 
 	private void createAndSavePage(SCManualPage currentPage) {
+		PageGroup pageGroup = currentPage.group();
+		Item item = currentPage.item();
 		TranslatableComponent helpInfo = currentPage.helpInfo();
-		boolean reinforcedPage = helpInfo.getKey().equals("help.securitycraft:reinforced.info");
-		String title = (reinforcedPage ? Utils.localize("gui.securitycraft:scManual.reinforced") : Utils.localize(currentPage.item().getDescriptionId())).getString();
+		String title = currentPage.title().getString();
 		String description = helpInfo.getString();
 		String recipe;
 
-		if (reinforcedPage)
+		if (pageGroup == PageGroup.REINFORCED || item == SCContent.REINFORCED_HOPPER.get().asItem())
 			recipe = Utils.localize("gui.securitycraft:scManual.recipe.reinforced").getString();
-		else {
-			recipe = currentPage.hasRecipeDescription() ? Utils.localize("gui.securitycraft:scManual.recipe." + currentPage.item().getRegistryName().getPath()).getString() : null;
+		else if (currentPage.hasRecipeDescription())
+			recipe = Utils.localize("gui.securitycraft:scManual.recipe." + currentPage.item().getRegistryName().getPath()).getString();
+		else if (!isCreatingGif)
+			recipe = "![Recipe](" + createRecipeScreenshot(currentPage, title) + ")";
+		else
+			recipe = "![Recipe](" + saveRecipeGif(title) + ")";
 
-			if (recipe == null)
-				recipe = "![Recipe](" + takeAndSaveRecipeScreenshot(title) + ")";
-		}
-
-		homePage.add("- [[" + title + "|" + title + "]]");
+		pages.add("- [[" + title + "|" + title + "]]");
 
 		try {
 			List<String> lines = new ArrayList<>();
@@ -213,13 +331,41 @@ public class WikiizerScreen extends Screen {
 		}
 	}
 
-	private String takeAndSaveRecipeScreenshot(String title) {
+	private String createRecipeScreenshot(SCManualPage currentPage, String title) {
 		String savePath;
+		File fileToSaveTo;
 
 		title = title.toLowerCase().replace(" ", "_");
-		savePath = "resources/" + title + ".png";
-		ScreenshotUtil.grab(new File(OUTPUT_FOLDER, savePath));
-		return savePath;
+
+		if (isCreatingGif)
+			savePath = currentPage.group().name().toLowerCase() + "/" + title + ".png";
+		else
+			savePath = title + ".png";
+
+		fileToSaveTo = new File(RESOURCES_FOLDER, savePath);
+
+		if (isCreatingGif)
+			gifImageFiles.add(fileToSaveTo);
+
+		ScreenshotUtil.grabScreenshot(fileToSaveTo);
+		return "resources/" + savePath;
+	}
+
+	private void initiateGifCreation(SCManualPage currentPage) {
+		isCreatingGif = true;
+		currentGroupItemIndex = 0;
+		gifImageFiles = new ArrayList<>();
+		new File(RESOURCES_FOLDER, currentPage.group().name().toLowerCase()).mkdir();
+	}
+
+	private String saveRecipeGif(String title) {
+		String savePath = title.toLowerCase().replace(" ", "_") + ".gif";
+
+		ScreenshotUtil.createGif(new File(RESOURCES_FOLDER, savePath), new ArrayList<>(gifImageFiles));
+		isCreatingGif = false;
+		currentGroupItemIndex = 0;
+		gifImageFiles.clear();
+		return "resources/" + savePath;
 	}
 
 	private void addExtraInfo(Item item, List<String> lines) {
@@ -277,8 +423,21 @@ public class WikiizerScreen extends Screen {
 
 	private void finalizeWiki() {
 		try {
-			FileUtils.writeLines(new File(OUTPUT_FOLDER, "Home.md"), homePage);
 			//@formatter:off
+			List<String> homePage = new ArrayList<>(Arrays.asList(
+					"# SecurityCraft Wiki",
+					"",
+					String.format(
+							"This wiki is generated from the mod's ingame manual. While it was created using SecurityCraft %s for Minecraft %s, most of the content applies to the mod in other Minecraft versions, or other versions of SecurityCraft.  ",
+							SC_VERSION,
+							MC_VERSION),
+					"All the information in this wiki can also be found in the ingame SecurityCraft Manual. You can get it by crafting a book together with iron bars. Do note, that it may visualize some information (like recipes) better than this wiki.",
+					"",
+					"## Pages",
+					""));
+			pages.sort(String::compareTo);
+			homePage.addAll(pages);
+			FileUtils.writeLines(new File(OUTPUT_FOLDER, "Home.md"), homePage);
 			FileUtils.writeLines(new File(OUTPUT_FOLDER, "_Footer.md"), List.of(
 					String.format("Generated at `%s` using [SecurityCraft Wikiizer](https://github.com/bl4ckscor3/SecurityCraft-Wikiizer), with SecurityCraft %s and Minecraft %s.",
 							new Date(),
@@ -292,15 +451,36 @@ public class WikiizerScreen extends Screen {
 	}
 
 	private void reset() {
-		currentPage = 0;
-		OUTPUT_FOLDER.delete();
-		OUTPUT_FOLDER.mkdir();
-		RESOURCES_FOLDER.mkdir();
+		changeRunningStatus(false);
+		currentPageIndex = 0;
+		previousPageIndex = -1;
+		isCreatingGif = false;
+		currentGroupItemIndex = 0;
+		gifImageFiles.clear();
+		pages.clear();
+		resultDisplay.setIngredient(Ingredient.EMPTY);
+
+		for (SimpleIngredientDisplay display : displays) {
+			display.setIngredient(Ingredient.EMPTY);
+		}
+
+		for (PageGroup group : PageGroup.values()) {
+			new File(RESOURCES_FOLDER, group.name().toLowerCase()).delete();
+		}
 	}
 
 	private void changeRunningStatus(boolean shouldBeRunning) {
+		if (shouldBeRunning)
+			refreshOutputFolder();
+
 		isRunning = shouldBeRunning;
 		startStopButton.active = !shouldBeRunning;
+	}
+
+	private void refreshOutputFolder() {
+		OUTPUT_FOLDER.delete();
+		OUTPUT_FOLDER.mkdir();
+		RESOURCES_FOLDER.mkdir();
 	}
 
 	//from JEI

@@ -1,6 +1,13 @@
 package bl4ckscor3.wikiizer;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
+import java.util.List;
+
+import javax.imageio.ImageIO;
+import javax.imageio.stream.FileImageOutputStream;
+import javax.imageio.stream.ImageOutputStream;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -14,7 +21,7 @@ import net.minecraft.client.Screenshot;
 public class ScreenshotUtil {
 	private static final Logger LOGGER = LogManager.getLogger();
 
-	public static void grab(File target) {
+	public static void grabScreenshot(File target) {
 		//takes a screenshot of the whole game screen
 		NativeImage img = Screenshot.takeScreenshot(Minecraft.getInstance().getMainRenderTarget());
 		int startX = -1;
@@ -60,6 +67,39 @@ public class ScreenshotUtil {
 			finally {
 				img.close();
 				copy.close();
+			}
+		});
+	}
+
+	public static void createGif(File saveLocation, List<File> gifParts) {
+		Util.ioPool().execute(() -> {
+			ImageOutputStream output = null;
+			GifSequenceWriter writer = null;
+
+			try {
+				BufferedImage first = ImageIO.read(gifParts.get(0));
+
+				output = new FileImageOutputStream(saveLocation);
+				writer = new GifSequenceWriter(output, first.getType(), 1000, true);
+
+				for (File image : gifParts) {
+					writer.writeToSequence(ImageIO.read(image));
+				}
+
+				writer.save();
+			}
+			catch (Exception exception) {
+				LOGGER.warn("Couldn't save gif", exception);
+			}
+			finally {
+				if (output != null) {
+					try {
+						output.close();
+					}
+					catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
 			}
 		});
 	}
