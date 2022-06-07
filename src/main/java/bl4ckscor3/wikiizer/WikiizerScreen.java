@@ -57,9 +57,7 @@ public class WikiizerScreen extends Screen {
 	private static final File OUTPUT_FOLDER = new File(Minecraft.getInstance().gameDirectory, "scwikiizer");
 	private static final File RESOURCES_FOLDER = new File(OUTPUT_FOLDER, "resources");
 	private static final ResourceLocation CRAFTING_GRID_TEXTURE = new ResourceLocation("scwikiizer", "textures/gui/crafting_grid.png");
-	//@formatter:off
 	private final List<String> pages = new ArrayList<>();
-	//@formatter:on
 	private boolean isRunning = false;
 	private int previousPageIndex = 0;
 	private int currentPageIndex = 0;
