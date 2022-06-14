@@ -2,17 +2,20 @@ buildscript {
     repositories {
         maven { url = 'https://maven.minecraftforge.net' }
         maven { url = 'https://repo.spongepowered.org/maven' }
+        maven { url = 'https://maven.parchmentmc.org' }
         mavenCentral()
     }
 
     dependencies {
         classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.1.+', changing: true
         classpath group: 'org.spongepowered', name: 'mixingradle', version: '0.7.+'
+        classpath 'org.parchmentmc:librarian:1.+'
     }
 }
 
 apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'org.spongepowered.mixin'
+apply plugin: 'org.parchmentmc.librarian.forgegradle'
 apply plugin: 'eclipse'
 
 version = '1.1'
@@ -23,7 +26,7 @@ java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 println('Java: ' + System.getProperty('java.version') + ' JVM: ' + System.getProperty('java.vm.version') + '(' + System.getProperty('java.vendor') + ') Arch: ' + System.getProperty('os.arch'))
 
 minecraft {
-    mappings channel: 'official', version: '1.18.2'
+    mappings channel: 'parchment', version: '1.18.2-2022.06.05-1.19'
     accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
 
 	runs {
@@ -50,8 +53,8 @@ repositories {
 }
 
 dependencies {
-    minecraft 'net.minecraftforge:forge:1.18.2-40.1.47'
-    implementation fg.deobf("curse.maven:securitycraft-64760:3821245")
+    minecraft 'net.minecraftforge:forge:1.19-41.0.21'
+    implementation fg.deobf("curse.maven:securitycraft-64760:3828777")
 }
 
 jar {

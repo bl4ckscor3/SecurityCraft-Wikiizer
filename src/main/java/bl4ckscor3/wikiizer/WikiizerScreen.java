@@ -36,8 +36,7 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
@@ -50,6 +49,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.client.gui.widget.ExtendedButton;
+import net.minecraftforge.registries.ForgeRegistries;
 
 public class WikiizerScreen extends Screen {
 	private static final String SC_VERSION = SecurityCraft.getVersion();
@@ -69,7 +69,7 @@ public class WikiizerScreen extends Screen {
 	private List<File> gifImageFiles = new ArrayList<>();
 
 	public WikiizerScreen() {
-		super(new TextComponent("SecurityCraft Wikiizer"));
+		super(Component.literal("SecurityCraft Wikiizer"));
 
 		SCManualItem.PAGES.sort((page1, page2) -> {
 			String key1 = page1.title().getString();
@@ -83,8 +83,8 @@ public class WikiizerScreen extends Screen {
 	protected void init() {
 		super.init();
 
-		addRenderableWidget(new ExtendedButton(5, 5, 20, 20, new TextComponent("<-"), b -> Minecraft.getInstance().setScreen(null)));
-		startStopButton = addRenderableWidget(new ExtendedButton(30, 5, 50, 20, new TextComponent("Start"), b -> changeRunningStatus(!isRunning)));
+		addRenderableWidget(new ExtendedButton(5, 5, 20, 20, Component.literal("<-"), b -> Minecraft.getInstance().setScreen(null)));
+		startStopButton = addRenderableWidget(new ExtendedButton(30, 5, 50, 20, Component.literal("Start"), b -> changeRunningStatus(!isRunning)));
 
 		for (int i = 0; i < 3; i++) {
 			for (int j = 0; j < 3; j++) {
@@ -293,7 +293,7 @@ public class WikiizerScreen extends Screen {
 	private void createAndSavePage(SCManualPage currentPage) {
 		PageGroup pageGroup = currentPage.group();
 		Item item = currentPage.item();
-		TranslatableComponent helpInfo = currentPage.helpInfo();
+		Component helpInfo = currentPage.helpInfo();
 		String title = currentPage.title().getString();
 		String description = helpInfo.getString();
 		String recipe;
@@ -301,7 +301,7 @@ public class WikiizerScreen extends Screen {
 		if (pageGroup == PageGroup.REINFORCED || item == SCContent.REINFORCED_HOPPER.get().asItem())
 			recipe = Utils.localize("gui.securitycraft:scManual.recipe.reinforced").getString();
 		else if (currentPage.hasRecipeDescription())
-			recipe = Utils.localize("gui.securitycraft:scManual.recipe." + currentPage.item().getRegistryName().getPath()).getString();
+			recipe = Utils.localize("gui.securitycraft:scManual.recipe." + ForgeRegistries.ITEMS.getKey(currentPage.item()).getPath()).getString();
 		else if (!isCreatingGif)
 			recipe = "![Recipe](" + createRecipeScreenshot(currentPage, title) + ")";
 		else
@@ -395,7 +395,7 @@ public class WikiizerScreen extends Screen {
 					lines.add("");
 
 					for (Option<?> option : customizableBe.customOptions()) {
-						lines.add(new TextComponent("- ").append(Utils.localize("option" + block.getDescriptionId().substring(5) + "." + option.getName() + ".description")).getString());
+						lines.add(Component.literal("- ").append(Utils.localize("option" + block.getDescriptionId().substring(5) + "." + option.getName() + ".description")).getString());
 					}
 				}
 
@@ -405,7 +405,7 @@ public class WikiizerScreen extends Screen {
 					lines.add("");
 
 					for (ModuleType module : moduleInv.acceptedModules()) {
-						lines.add(new TextComponent("- ").append(Utils.localize("module" + block.getDescriptionId().substring(5) + "." + module.getItem().getDescriptionId().substring(5).replace("securitycraft.", "") + ".description")).getString());
+						lines.add(Component.literal("- ").append(Utils.localize("module" + block.getDescriptionId().substring(5) + "." + module.getItem().getDescriptionId().substring(5).replace("securitycraft.", "") + ".description")).getString());
 					}
 				}
 			}
