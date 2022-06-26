@@ -395,7 +395,7 @@ public class WikiizerScreen extends Screen {
 					lines.add("");
 
 					for (Option<?> option : customizableBe.customOptions()) {
-						lines.add(Component.literal("- ").append(Utils.localize("option" + block.getDescriptionId().substring(5) + "." + option.getName() + ".description")).getString());
+						lines.add(Utils.localize(option.getKey(block), option.getDescriptionKey(block)).getString());
 					}
 				}
 
