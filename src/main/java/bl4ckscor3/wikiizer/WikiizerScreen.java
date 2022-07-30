@@ -358,11 +358,13 @@ public class WikiizerScreen extends Screen {
 
 	private String saveRecipeGif(String title) {
 		String savePath = title.toLowerCase().replace(" ", "_") + ".gif";
+		File frameCache = new File(RESOURCES_FOLDER, savePath);
 
-		ScreenshotUtil.createGif(new File(RESOURCES_FOLDER, savePath), new ArrayList<>(gifImageFiles));
+		ScreenshotUtil.createGif(frameCache, new ArrayList<>(gifImageFiles));
 		isCreatingGif = false;
 		currentGroupItemIndex = 0;
 		gifImageFiles.clear();
+		frameCache.delete();
 		return "resources/" + savePath;
 	}
 
