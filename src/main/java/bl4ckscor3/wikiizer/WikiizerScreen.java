@@ -36,6 +36,7 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.BlockItem;
@@ -45,6 +46,7 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.ShapedRecipe;
 import net.minecraft.world.item.crafting.ShapelessRecipe;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -99,7 +101,7 @@ public class WikiizerScreen extends Screen {
 
 	@Override
 	public void render(PoseStack pose, int mouseX, int mouseY, float partialTick) {
-		renderDirtBackground(0);
+		renderDirtBackground(pose);
 
 		super.render(pose, mouseX, mouseY, partialTick);
 
@@ -157,6 +159,8 @@ public class WikiizerScreen extends Screen {
 		NonNullList<Ingredient> recipeIngredients = NonNullList.withSize(9, Ingredient.EMPTY);
 		Item item = currentPage.item();
 		PageGroup pageGroup = currentPage.group();
+		Level level = Minecraft.getInstance().level;
+		RegistryAccess registryAccess = level.registryAccess();
 
 		for (SimpleIngredientDisplay display : displays) {
 			display.setIngredient(Ingredient.EMPTY);
@@ -165,11 +169,11 @@ public class WikiizerScreen extends Screen {
 		resultDisplay.setIngredient(Ingredient.EMPTY);
 
 		if (pageGroup == PageGroup.NONE) {
-			for (Recipe<?> object : Minecraft.getInstance().level.getRecipeManager().getRecipes()) {
+			for (Recipe<?> object : level.getRecipeManager().getRecipes()) {
 				if (object instanceof ShapedRecipe recipe) {
-					if (recipe.getResultItem().getItem() == item) {
+					if (recipe.getResultItem(registryAccess).getItem() == item) {
 						NonNullList<Ingredient> ingredients = recipe.getIngredients();
-						NonNullList<Ingredient> recipeItems = NonNullList.<Ingredient> withSize(9, Ingredient.EMPTY);
+						NonNullList<Ingredient> recipeItems = NonNullList.<Ingredient>withSize(9, Ingredient.EMPTY);
 
 						for (int i = 0; i < ingredients.size(); i++) {
 							recipeItems.set(getCraftMatrixPosition(i, recipe.getWidth(), recipe.getHeight()), ingredients.get(i));
@@ -180,12 +184,12 @@ public class WikiizerScreen extends Screen {
 					}
 				}
 				else if (object instanceof ShapelessRecipe recipe) {
-					if (recipe.getResultItem().getItem() == item) {
+					if (recipe.getResultItem(registryAccess).getItem() == item) {
 						//don't show keycard reset recipes
 						if (recipe.getId().getPath().endsWith("_reset"))
 							continue;
 
-						NonNullList<Ingredient> recipeItems = NonNullList.<Ingredient> withSize(recipe.getIngredients().size(), Ingredient.EMPTY);
+						NonNullList<Ingredient> recipeItems = NonNullList.<Ingredient>withSize(recipe.getIngredients().size(), Ingredient.EMPTY);
 
 						for (int i = 0; i < recipeItems.size(); i++) {
 							recipeItems.set(i, recipe.getIngredients().get(i));
@@ -211,7 +215,7 @@ public class WikiizerScreen extends Screen {
 					break;
 
 				if (object instanceof ShapedRecipe recipe) {
-					if (!recipe.getResultItem().isEmpty() && pageItems.contains(recipe.getResultItem().getItem())) {
+					if (!recipe.getResultItem(registryAccess).isEmpty() && pageItems.contains(recipe.getResultItem(registryAccess).getItem())) {
 						NonNullList<Ingredient> ingredients = recipe.getIngredients();
 
 						for (int i = 0; i < ingredients.size(); i++) {
@@ -220,7 +224,7 @@ public class WikiizerScreen extends Screen {
 							if (items.length == 0)
 								continue;
 
-							int indexToAddAt = pageItems.indexOf(recipe.getResultItem().getItem());
+							int indexToAddAt = pageItems.indexOf(recipe.getResultItem(registryAccess).getItem());
 
 							//first item needs to suffice since multiple recipes are being cycled through
 							recipeStacks.get(getCraftMatrixPosition(i, recipe.getWidth(), recipe.getHeight()))[indexToAddAt] = items[0];
@@ -230,7 +234,7 @@ public class WikiizerScreen extends Screen {
 					}
 				}
 				else if (object instanceof ShapelessRecipe recipe) {
-					if (!recipe.getResultItem().isEmpty() && pageItems.contains(recipe.getResultItem().getItem())) {
+					if (!recipe.getResultItem(registryAccess).isEmpty() && pageItems.contains(recipe.getResultItem(registryAccess).getItem())) {
 						//don't show keycard reset recipes
 						if (recipe.getId().getPath().endsWith("_reset"))
 							continue;
@@ -243,7 +247,7 @@ public class WikiizerScreen extends Screen {
 							if (items.length == 0)
 								continue;
 
-							int indexToAddAt = pageItems.indexOf(recipe.getResultItem().getItem());
+							int indexToAddAt = pageItems.indexOf(recipe.getResultItem(registryAccess).getItem());
 
 							//first item needs to suffice since multiple recipes are being cycled through
 							recipeStacks.get(i)[indexToAddAt] = items[0];

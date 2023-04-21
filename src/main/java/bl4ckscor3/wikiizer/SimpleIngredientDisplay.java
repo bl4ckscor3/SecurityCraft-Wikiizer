@@ -21,7 +21,7 @@ public class SimpleIngredientDisplay {
 		if (stacks == null || stacks.length == 0)
 			return;
 
-		Minecraft.getInstance().getItemRenderer().renderAndDecorateItem(stacks[currentRenderingStack], x, y);
+		Minecraft.getInstance().getItemRenderer().renderAndDecorateItem(pose, stacks[currentRenderingStack], x, y);
 		changeRenderingStack(1);
 	}
 
