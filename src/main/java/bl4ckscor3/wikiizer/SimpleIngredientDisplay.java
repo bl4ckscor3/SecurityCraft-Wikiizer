@@ -1,8 +1,6 @@
 package bl4ckscor3.wikiizer;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-
-import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 
@@ -17,11 +15,11 @@ public class SimpleIngredientDisplay {
 		this.y = y;
 	}
 
-	public void render(PoseStack pose, int mouseX, int mouseY, float partialTick) {
+	public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
 		if (stacks == null || stacks.length == 0)
 			return;
 
-		Minecraft.getInstance().getItemRenderer().renderAndDecorateItem(pose, stacks[currentRenderingStack], x, y);
+		guiGraphics.renderItem(stacks[currentRenderingStack], x, y);
 		changeRenderingStack(1);
 	}
 

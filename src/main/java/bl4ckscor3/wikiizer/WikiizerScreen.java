@@ -12,9 +12,6 @@ import java.util.Map.Entry;
 
 import org.apache.commons.io.FileUtils;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
-
 import net.geforcemods.securitycraft.SCContent;
 import net.geforcemods.securitycraft.SecurityCraft;
 import net.geforcemods.securitycraft.api.ICustomizable;
@@ -32,6 +29,7 @@ import net.geforcemods.securitycraft.misc.SCManualPage;
 import net.geforcemods.securitycraft.util.Utils;
 import net.minecraft.DetectedVersion;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
@@ -100,10 +98,10 @@ public class WikiizerScreen extends Screen {
 	}
 
 	@Override
-	public void render(PoseStack pose, int mouseX, int mouseY, float partialTick) {
-		renderDirtBackground(pose);
+	public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+		renderDirtBackground(guiGraphics);
 
-		super.render(pose, mouseX, mouseY, partialTick);
+		super.render(guiGraphics, mouseX, mouseY, partialTick);
 
 		if (isRunning) {
 			if (currentPageIndex >= SCManualItem.PAGES.size()) {
@@ -113,7 +111,7 @@ public class WikiizerScreen extends Screen {
 			else {
 				SCManualPage currentPage = SCManualItem.PAGES.get(currentPageIndex);
 
-				renderRecipe(currentPage, pose, mouseX, mouseY, partialTick);
+				renderRecipe(currentPage, guiGraphics, mouseX, mouseY, partialTick);
 
 				if (!currentPage.group().hasRecipeGrid()) {
 					createAndSavePage(currentPage);
@@ -134,10 +132,10 @@ public class WikiizerScreen extends Screen {
 			}
 		}
 
-		drawCenteredString(pose, font, title, width / 2, 15, 0xFFFFFF);
+		guiGraphics.drawCenteredString(font, title, width / 2, 15, 0xFFFFFF);
 	}
 
-	private void renderRecipe(SCManualPage currentPage, PoseStack pose, int mouseX, int mouseY, float partialTick) {
+	private void renderRecipe(SCManualPage currentPage, GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
 		if (previousPageIndex != currentPageIndex) {
 			if (!currentPage.hasRecipeDescription())
 				populateRecipeField(currentPage);
@@ -145,14 +143,13 @@ public class WikiizerScreen extends Screen {
 			previousPageIndex = currentPageIndex;
 		}
 
-		RenderSystem._setShaderTexture(0, CRAFTING_GRID_TEXTURE);
-		blit(pose, 100, 100, 0, 0, 126, 64, 126, 64);
+		guiGraphics.blit(CRAFTING_GRID_TEXTURE, 100, 100, 0, 0, 126, 64, 126, 64);
 
 		for (SimpleIngredientDisplay display : displays) {
-			display.render(pose, mouseX, mouseY, partialTick);
+			display.render(guiGraphics, mouseX, mouseY, partialTick);
 		}
 
-		resultDisplay.render(pose, mouseX, mouseY, partialTick);
+		resultDisplay.render(guiGraphics, mouseX, mouseY, partialTick);
 	}
 
 	private void populateRecipeField(SCManualPage currentPage) {
