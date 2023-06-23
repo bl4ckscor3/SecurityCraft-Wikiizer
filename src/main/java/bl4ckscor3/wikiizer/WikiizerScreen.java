@@ -19,7 +19,7 @@ import net.geforcemods.securitycraft.api.IExplosive;
 import net.geforcemods.securitycraft.api.ILockable;
 import net.geforcemods.securitycraft.api.IModuleInventory;
 import net.geforcemods.securitycraft.api.IOwnable;
-import net.geforcemods.securitycraft.api.IPasswordProtected;
+import net.geforcemods.securitycraft.api.IPasscodeProtected;
 import net.geforcemods.securitycraft.api.IViewActivated;
 import net.geforcemods.securitycraft.api.Option;
 import net.geforcemods.securitycraft.items.SCManualItem;
@@ -383,8 +383,8 @@ public class WikiizerScreen extends Screen {
 				if (be instanceof IOwnable)
 					properties.add(Utils.localize("gui.securitycraft:scManual.ownableBlock").getString());
 
-				if (be instanceof IPasswordProtected)
-					properties.add(Utils.localize("gui.securitycraft:scManual.passwordProtectedBlock").getString());
+				if (be instanceof IPasscodeProtected)
+					properties.add(Utils.localize("gui.securitycraft:scManual.passcodeProtectedBlock").getString());
 
 				if (be instanceof IViewActivated)
 					properties.add(Utils.localize("gui.securitycraft:scManual.viewActivatedBlock").getString());
@@ -398,7 +398,7 @@ public class WikiizerScreen extends Screen {
 					lines.add("");
 
 					for (Option<?> option : customizableBe.customOptions()) {
-						lines.add(Component.literal("- ").append(Utils.localize(option.getKey(block), Utils.localize(option.getDescriptionKey(block)))).getString());
+						lines.add(Component.translatable("gui.securitycraft:scManual.option_text", Component.translatable(option.getDescriptionKey(block)), option.getDefaultInfo()).getString());
 					}
 				}
 

@@ -9,7 +9,7 @@ version = '1.2'
 group = 'bl4ckscor3'
 
 base {
-	archivesName = 'scwikiizer-1.20'
+	archivesName = 'scwikiizer-1.20.1'
 }
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
@@ -17,7 +17,7 @@ java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 println "Java: ${System.getProperty 'java.version'}, JVM: ${System.getProperty 'java.vm.version'} (${System.getProperty 'java.vendor'}), Arch: ${System.getProperty 'os.arch'}"
 
 minecraft {
-	mappings channel: 'parchment', version: '1.19.3-2023.03.12-1.20'
+	mappings channel: 'parchment', version: '1.19.3-2023.03.12-1.20.1'
 	accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
 	copyIdeResources = true
 
@@ -45,8 +45,8 @@ repositories {
 }
 
 dependencies {
-	minecraft 'net.minecraftforge:forge:1.20-46.0.12'
-    implementation fg.deobf("curse.maven:security-craft-64760:4472980")
+	minecraft 'net.minecraftforge:forge:1.20.1-47.0.19'
+    implementation fg.deobf("curse.maven:security-craft-64760:4605459")
 
 }
 
