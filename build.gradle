@@ -46,7 +46,7 @@ repositories {
 
 dependencies {
 	minecraft 'net.minecraftforge:forge:1.20.1-47.0.19'
-    implementation fg.deobf("curse.maven:security-craft-64760:4605459")
+    implementation fg.deobf("curse.maven:security-craft-64760:4675865")
 
 }
 
