@@ -470,7 +470,7 @@ public class WikiizerScreen extends Screen {
 
 		for (PageGroup group : PageGroup.values()) {
 			try {
-				Files.deleteIfExists(new File(RESOURCES_FOLDER, group.name().toLowerCase()).toPath());
+				FileUtils.deleteDirectory(new File(RESOURCES_FOLDER, group.name().toLowerCase()));
 			}
 			catch (IOException e) {
 				e.printStackTrace();
@@ -488,7 +488,7 @@ public class WikiizerScreen extends Screen {
 
 	private void refreshOutputFolder() {
 		try {
-			Files.deleteIfExists(OUTPUT_FOLDER.toPath());
+			FileUtils.deleteDirectory(OUTPUT_FOLDER);
 		}
 		catch (IOException e) {
 			e.printStackTrace();
