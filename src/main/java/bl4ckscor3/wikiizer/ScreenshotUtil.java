@@ -2,7 +2,6 @@ package bl4ckscor3.wikiizer;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.IOException;
 import java.util.List;
 
 import javax.imageio.ImageIO;
@@ -20,6 +19,8 @@ import net.minecraft.client.Screenshot;
 
 public class ScreenshotUtil {
 	private static final Logger LOGGER = LogManager.getLogger();
+
+	private ScreenshotUtil() {}
 
 	public static void grabScreenshot(File target) {
 		//takes a screenshot of the whole game screen
@@ -73,13 +74,11 @@ public class ScreenshotUtil {
 
 	public static void createGif(File saveLocation, List<File> gifParts) {
 		Util.ioPool().execute(() -> {
-			ImageOutputStream output = null;
 			GifSequenceWriter writer = null;
 
-			try {
+			try (ImageOutputStream output = new FileImageOutputStream(saveLocation)) {
 				BufferedImage first = ImageIO.read(gifParts.get(0));
 
-				output = new FileImageOutputStream(saveLocation);
 				writer = new GifSequenceWriter(output, first.getType(), 1000, true);
 
 				for (File image : gifParts) {
@@ -90,16 +89,6 @@ public class ScreenshotUtil {
 			}
 			catch (Exception exception) {
 				LOGGER.warn("Couldn't save gif", exception);
-			}
-			finally {
-				if (output != null) {
-					try {
-						output.close();
-					}
-					catch (IOException e) {
-						e.printStackTrace();
-					}
-				}
 			}
 		});
 	}

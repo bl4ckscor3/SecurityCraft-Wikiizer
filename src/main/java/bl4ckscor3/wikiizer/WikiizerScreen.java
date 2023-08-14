@@ -2,6 +2,7 @@ package bl4ckscor3.wikiizer;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -146,10 +147,10 @@ public class WikiizerScreen extends Screen {
 		guiGraphics.blit(CRAFTING_GRID_TEXTURE, 100, 100, 0, 0, 126, 64, 126, 64);
 
 		for (SimpleIngredientDisplay display : displays) {
-			display.render(guiGraphics, mouseX, mouseY, partialTick);
+			display.render(guiGraphics);
 		}
 
-		resultDisplay.render(guiGraphics, mouseX, mouseY, partialTick);
+		resultDisplay.render(guiGraphics);
 	}
 
 	private void populateRecipeField(SCManualPage currentPage) {
@@ -180,21 +181,19 @@ public class WikiizerScreen extends Screen {
 						break;
 					}
 				}
-				else if (object instanceof ShapelessRecipe recipe) {
-					if (recipe.getResultItem(registryAccess).getItem() == item) {
-						//don't show keycard reset recipes
-						if (recipe.getId().getPath().endsWith("_reset"))
-							continue;
+				else if (object instanceof ShapelessRecipe recipe && recipe.getResultItem(registryAccess).getItem() == item) {
+					//don't show keycard reset recipes
+					if (recipe.getId().getPath().endsWith("_reset"))
+						continue;
 
-						NonNullList<Ingredient> recipeItems = NonNullList.<Ingredient>withSize(recipe.getIngredients().size(), Ingredient.EMPTY);
+					NonNullList<Ingredient> recipeItems = NonNullList.<Ingredient>withSize(recipe.getIngredients().size(), Ingredient.EMPTY);
 
-						for (int i = 0; i < recipeItems.size(); i++) {
-							recipeItems.set(i, recipe.getIngredients().get(i));
-						}
-
-						recipeIngredients = recipeItems;
-						break;
+					for (int i = 0; i < recipeItems.size(); i++) {
+						recipeItems.set(i, recipe.getIngredients().get(i));
 					}
+
+					recipeIngredients = recipeItems;
+					break;
 				}
 			}
 		}
@@ -230,28 +229,26 @@ public class WikiizerScreen extends Screen {
 						stacksLeft--;
 					}
 				}
-				else if (object instanceof ShapelessRecipe recipe) {
-					if (!recipe.getResultItem(registryAccess).isEmpty() && pageItems.contains(recipe.getResultItem(registryAccess).getItem())) {
-						//don't show keycard reset recipes
-						if (recipe.getId().getPath().endsWith("_reset"))
+				else if (object instanceof ShapelessRecipe recipe && !recipe.getResultItem(registryAccess).isEmpty() && pageItems.contains(recipe.getResultItem(registryAccess).getItem())) {
+					//don't show keycard reset recipes
+					if (recipe.getId().getPath().endsWith("_reset"))
+						continue;
+
+					NonNullList<Ingredient> ingredients = recipe.getIngredients();
+
+					for (int i = 0; i < ingredients.size(); i++) {
+						ItemStack[] items = ingredients.get(i).getItems();
+
+						if (items.length == 0)
 							continue;
 
-						NonNullList<Ingredient> ingredients = recipe.getIngredients();
+						int indexToAddAt = pageItems.indexOf(recipe.getResultItem(registryAccess).getItem());
 
-						for (int i = 0; i < ingredients.size(); i++) {
-							ItemStack[] items = ingredients.get(i).getItems();
-
-							if (items.length == 0)
-								continue;
-
-							int indexToAddAt = pageItems.indexOf(recipe.getResultItem(registryAccess).getItem());
-
-							//first item needs to suffice since multiple recipes are being cycled through
-							recipeStacks.get(i)[indexToAddAt] = items[0];
-						}
-
-						stacksLeft--;
+						//first item needs to suffice since multiple recipes are being cycled through
+						recipeStacks.get(i)[indexToAddAt] = items[0];
 					}
+
+					stacksLeft--;
 				}
 			}
 
@@ -265,7 +262,7 @@ public class WikiizerScreen extends Screen {
 			}
 		}
 
-		if (recipeIngredients.size() > 0) {
+		if (!recipeIngredients.isEmpty()) {
 			for (int i = 0; i < 3; i++) {
 				for (int j = 0; j < 3; j++) {
 					int index = (i * 3) + j;
@@ -365,7 +362,14 @@ public class WikiizerScreen extends Screen {
 		isCreatingGif = false;
 		currentGroupItemIndex = 0;
 		gifImageFiles.clear();
-		frameCache.delete();
+
+		try {
+			Files.deleteIfExists(frameCache.toPath());
+		}
+		catch (IOException e) {
+			e.printStackTrace();
+		}
+
 		return "resources/" + savePath;
 	}
 
@@ -413,7 +417,7 @@ public class WikiizerScreen extends Screen {
 				}
 			}
 
-			if (properties.size() > 0) {
+			if (!properties.isEmpty()) {
 				lines.add("");
 				lines.add("## Properties");
 				lines.add("");
@@ -465,7 +469,12 @@ public class WikiizerScreen extends Screen {
 		}
 
 		for (PageGroup group : PageGroup.values()) {
-			new File(RESOURCES_FOLDER, group.name().toLowerCase()).delete();
+			try {
+				Files.deleteIfExists(new File(RESOURCES_FOLDER, group.name().toLowerCase()).toPath());
+			}
+			catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 
@@ -478,7 +487,13 @@ public class WikiizerScreen extends Screen {
 	}
 
 	private void refreshOutputFolder() {
-		OUTPUT_FOLDER.delete();
+		try {
+			Files.deleteIfExists(OUTPUT_FOLDER.toPath());
+		}
+		catch (IOException e) {
+			e.printStackTrace();
+		}
+
 		OUTPUT_FOLDER.mkdir();
 		RESOURCES_FOLDER.mkdir();
 	}

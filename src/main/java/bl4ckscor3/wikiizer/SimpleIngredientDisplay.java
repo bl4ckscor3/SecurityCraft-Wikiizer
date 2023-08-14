@@ -15,7 +15,7 @@ public class SimpleIngredientDisplay {
 		this.y = y;
 	}
 
-	public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+	public void render(GuiGraphics guiGraphics) {
 		if (stacks == null || stacks.length == 0)
 			return;
 
