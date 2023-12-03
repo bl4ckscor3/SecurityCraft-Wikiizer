@@ -1,5 +1,18 @@
 package bl4ckscor3.wikiizer;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+
+import org.apache.commons.io.FileUtils;
+
 import net.geforcemods.securitycraft.SCContent;
 import net.geforcemods.securitycraft.SecurityCraft;
 import net.geforcemods.securitycraft.api.ICustomizable;
@@ -23,13 +36,13 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.ShapedRecipe;
 import net.minecraft.world.item.crafting.ShapelessRecipe;
@@ -38,19 +51,6 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.neoforge.client.gui.widget.ExtendedButton;
-import net.neoforged.neoforge.registries.ForgeRegistries;
-import org.apache.commons.io.FileUtils;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 
 public class WikiizerScreen extends Screen {
 	private static final String SC_VERSION = SecurityCraft.getVersion();
@@ -299,7 +299,7 @@ public class WikiizerScreen extends Screen {
 		if (pageGroup == PageGroup.REINFORCED || item == SCContent.REINFORCED_HOPPER.get().asItem())
 			recipe = Utils.localize("gui.securitycraft:scManual.recipe.reinforced").getString();
 		else if (currentPage.hasRecipeDescription())
-			recipe = Utils.localize("gui.securitycraft:scManual.recipe." + ForgeRegistries.ITEMS.getKey(currentPage.item()).getPath()).getString();
+			recipe = Utils.localize("gui.securitycraft:scManual.recipe." + BuiltInRegistries.ITEM.getKey(currentPage.item()).getPath()).getString();
 		else if (!isCreatingGif)
 			recipe = "![Recipe](" + createRecipeScreenshot(currentPage, title) + ")";
 		else

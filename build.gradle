@@ -36,8 +36,8 @@ repositories {
 }
 
 dependencies {
-    implementation 'net.neoforged:neoforge:20.2.47-beta'
-    implementation "curse.maven:security-craft-64760:4855267"
+    implementation 'net.neoforged:neoforge:20.2.86'
+    implementation "curse.maven:security-craft-64760:4920744"
 }
 
 tasks.named('jar', Jar).configure {

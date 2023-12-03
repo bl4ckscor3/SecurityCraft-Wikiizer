@@ -1,5 +1,8 @@
 package bl4ckscor3.wikiizer;
 
+import java.awt.image.RenderedImage;
+import java.io.IOException;
+
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageTypeSpecifier;
@@ -9,8 +12,6 @@ import javax.imageio.metadata.IIOInvalidTreeException;
 import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.metadata.IIOMetadataNode;
 import javax.imageio.stream.ImageOutputStream;
-import java.awt.image.RenderedImage;
-import java.io.IOException;
 
 /**
  * @author https://memorynotfound.com/generate-gif-image-java-delay-infinite-loop-example/

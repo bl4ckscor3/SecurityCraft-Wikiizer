@@ -1,18 +1,21 @@
 package bl4ckscor3.wikiizer;
 
-import com.mojang.blaze3d.platform.NativeImage;
-import net.minecraft.Util;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.Screenshot;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.util.List;
 
 import javax.imageio.ImageIO;
 import javax.imageio.stream.FileImageOutputStream;
 import javax.imageio.stream.ImageOutputStream;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.util.List;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import com.mojang.blaze3d.platform.NativeImage;
+
+import net.minecraft.Util;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.Screenshot;
 
 public class ScreenshotUtil {
 	private static final Logger LOGGER = LogManager.getLogger();
