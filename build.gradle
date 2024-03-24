@@ -2,15 +2,14 @@ plugins {
     id 'java-library'
     id 'eclipse'
     id 'idea'
-    id 'net.neoforged.gradle.userdev' version '[7.0,7.1)'
-//	id 'org.parchmentmc.librarian.forgegradle' version '1.+'
+    id 'net.neoforged.gradle.userdev' version '7.0.100'
 }
 
 version = '1.2'
 group = 'bl4ckscor3'
 
 base {
-	archivesName = 'scwikiizer-1.20.2'
+	archivesName = 'scwikiizer-1.20.4'
 }
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
@@ -36,8 +35,8 @@ repositories {
 }
 
 dependencies {
-    implementation 'net.neoforged:neoforge:20.2.86'
-    implementation "curse.maven:security-craft-64760:4920744"
+    implementation 'net.neoforged:neoforge:20.4.210'
+    implementation "curse.maven:security-craft-64760:5207775"
 }
 
 tasks.named('jar', Jar).configure {
@@ -56,5 +55,5 @@ tasks.named('jar', Jar).configure {
 jar.finalizedBy('reobfJar')
 
 tasks.withType(JavaCompile).configureEach {
-    options.encoding = 'UTF-8' // Use the UTF-8 charset for Java compilation
+    options.encoding = 'UTF-8'
 }

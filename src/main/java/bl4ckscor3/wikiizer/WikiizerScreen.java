@@ -412,7 +412,7 @@ public class WikiizerScreen extends Screen {
 					lines.add("");
 
 					for (ModuleType module : moduleInv.acceptedModules()) {
-						lines.add(Component.literal("- ").append(Utils.localize("module" + block.getDescriptionId().substring(5) + "." + module.getItem().getDescriptionId().substring(5).replace("securitycraft.", "") + ".description")).getString());
+						lines.add(Component.literal("- ").append(Utils.localize(moduleInv.getModuleDescriptionId(block.getDescriptionId().substring(6), module))).getString());
 					}
 				}
 			}
