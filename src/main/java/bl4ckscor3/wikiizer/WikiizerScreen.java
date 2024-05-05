@@ -100,8 +100,6 @@ public class WikiizerScreen extends Screen {
 
 	@Override
 	public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-		renderDirtBackground(guiGraphics);
-
 		super.render(guiGraphics, mouseX, mouseY, partialTick);
 
 		if (isRunning) {
