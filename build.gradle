@@ -2,14 +2,14 @@ plugins {
     id 'java-library'
     id 'eclipse'
     id 'idea'
-    id 'net.neoforged.gradle.userdev' version '7.0.105'
+    id 'net.neoforged.gradle.userdev' version '7.0.+'
 }
 
 version = '1.2'
 group = 'bl4ckscor3'
 
 base {
-	archivesName = 'scwikiizer-1.20.6'
+	archivesName = 'scwikiizer-1.21'
 }
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
@@ -35,8 +35,8 @@ repositories {
 }
 
 dependencies {
-    implementation 'net.neoforged:neoforge:20.6.40-beta'
-    implementation "curse.maven:security-craft-64760:5310262"
+	implementation 'net.neoforged:neoforge:21.0.0-beta'
+    implementation "curse.maven:security-craft-64760:5424870"
 }
 
 tasks.named('jar', Jar).configure {

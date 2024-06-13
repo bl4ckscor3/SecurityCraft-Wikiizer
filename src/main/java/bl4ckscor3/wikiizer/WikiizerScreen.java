@@ -33,7 +33,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -48,8 +47,6 @@ import net.minecraft.world.item.crafting.ShapedRecipe;
 import net.minecraft.world.item.crafting.ShapelessRecipe;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.EntityBlock;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.neoforge.client.gui.widget.ExtendedButton;
 
 public class WikiizerScreen extends Screen {
@@ -57,7 +54,7 @@ public class WikiizerScreen extends Screen {
 	private static final String MC_VERSION = DetectedVersion.BUILT_IN.getName();
 	private static final File OUTPUT_FOLDER = new File(Minecraft.getInstance().gameDirectory, "scwikiizer");
 	private static final File RESOURCES_FOLDER = new File(OUTPUT_FOLDER, "resources");
-	private static final ResourceLocation CRAFTING_GRID_TEXTURE = new ResourceLocation("scwikiizer", "textures/gui/crafting_grid.png");
+	private static final ResourceLocation CRAFTING_GRID_TEXTURE = ResourceLocation.fromNamespaceAndPath(SecurityCraftWikiizer.MODID, "textures/gui/crafting_grid.png");
 	private final List<String> pages = new ArrayList<>();
 	private boolean isRunning = false;
 	private int previousPageIndex = 0;
@@ -306,18 +303,16 @@ public class WikiizerScreen extends Screen {
 		pages.add("- [[" + title + "|" + title + "]]");
 
 		try {
-			List<String> lines = new ArrayList<>();
-
 			//@formatter:off
-			lines.addAll(Arrays.asList(
+			List<String> lines = Arrays.asList(
 					description,
 					"",
 					"## Recipe",
 					"",
-					recipe));
+					recipe);
 			//@formatter:on
 
-			addExtraInfo(currentPage.item(), lines);
+			addExtraInfo(currentPage, lines);
 			FileUtils.writeLines(new File(OUTPUT_FOLDER, title + ".md"), lines);
 		}
 		catch (IOException e) {
@@ -371,56 +366,57 @@ public class WikiizerScreen extends Screen {
 		return "resources/" + savePath;
 	}
 
-	private void addExtraInfo(Item item, List<String> lines) {
-		if (item instanceof BlockItem blockItem) {
+	private void addExtraInfo(SCManualPage page, List<String> lines) {
+		List<String> properties = new ArrayList<>();
+
+		if (page.item() instanceof BlockItem blockItem) {
 			Block block = blockItem.getBlock();
-			List<String> properties = new ArrayList<>();
 
 			if (block instanceof IExplosive)
 				properties.add(Utils.localize("gui.securitycraft:scManual.explosiveBlock").getString());
+		}
 
-			if (block.defaultBlockState().hasBlockEntity()) {
-				BlockEntity be = ((EntityBlock) block).newBlockEntity(BlockPos.ZERO, block.defaultBlockState());
+		Object inWorldObject = page.getInWorldObject();
 
-				if (be instanceof IOwnable)
-					properties.add(Utils.localize("gui.securitycraft:scManual.ownableBlock").getString());
+		if (inWorldObject != null) {
+			if (inWorldObject instanceof IOwnable)
+				properties.add(Utils.localize("gui.securitycraft:scManual.ownableBlock").getString());
 
-				if (be instanceof IPasscodeProtected)
-					properties.add(Utils.localize("gui.securitycraft:scManual.passcodeProtectedBlock").getString());
+			if (inWorldObject instanceof IPasscodeProtected)
+				properties.add(Utils.localize("gui.securitycraft:scManual.passcodeProtectedBlock").getString());
 
-				if (be instanceof IViewActivated)
-					properties.add(Utils.localize("gui.securitycraft:scManual.viewActivatedBlock").getString());
+			if (inWorldObject instanceof IViewActivated)
+				properties.add(Utils.localize("gui.securitycraft:scManual.viewActivatedBlock").getString());
 
-				if (be instanceof ILockable)
-					properties.add(Utils.localize("gui.securitycraft:scManual.lockable").getString());
+			if (inWorldObject instanceof ILockable)
+				properties.add(Utils.localize("gui.securitycraft:scManual.lockable").getString());
 
-				if (be instanceof ICustomizable customizableBe && customizableBe.customOptions() != null && customizableBe.customOptions().length > 0) {
-					lines.add("");
-					lines.add("## Universal Block Modifier Options");
-					lines.add("");
+			if (inWorldObject instanceof ICustomizable customizableBe && customizableBe.customOptions() != null && customizableBe.customOptions().length > 0) {
+				lines.add("");
+				lines.add("## Universal Block Modifier Options");
+				lines.add("");
 
-					for (Option<?> option : customizableBe.customOptions()) {
-						lines.add(Component.translatable("gui.securitycraft:scManual.option_text", Component.translatable(option.getDescriptionKey(block)), option.getDefaultInfo()).getString());
-					}
-				}
-
-				if (be instanceof IModuleInventory moduleInv && moduleInv.acceptedModules() != null && moduleInv.acceptedModules().length > 0) {
-					lines.add("");
-					lines.add("## Accepted Modules");
-					lines.add("");
-
-					for (ModuleType module : moduleInv.acceptedModules()) {
-						lines.add(Component.literal("- ").append(Utils.localize(moduleInv.getModuleDescriptionId(block.getDescriptionId().substring(6), module))).getString());
-					}
+				for (Option<?> option : customizableBe.customOptions()) {
+					lines.add(Component.translatable("gui.securitycraft:scManual.option_text", Component.translatable(option.getDescriptionKey(Utils.getLanguageKeyDenotation(inWorldObject))), option.getDefaultInfo()).getString());
 				}
 			}
 
-			if (!properties.isEmpty()) {
+			if (inWorldObject instanceof IModuleInventory moduleInv && moduleInv.acceptedModules() != null && moduleInv.acceptedModules().length > 0) {
 				lines.add("");
-				lines.add("## Properties");
+				lines.add("## Accepted Modules");
 				lines.add("");
-				lines.addAll(properties.stream().map(e -> "- " + e).toList());
+
+				for (ModuleType module : moduleInv.acceptedModules()) {
+					lines.add(Component.literal("- ").append(Utils.localize(moduleInv.getModuleDescriptionId(Utils.getLanguageKeyDenotation(inWorldObject), module))).getString());
+				}
 			}
+		}
+
+		if (!properties.isEmpty()) {
+			lines.add("");
+			lines.add("## Properties");
+			lines.add("");
+			lines.addAll(properties.stream().map(e -> "- " + e).toList());
 		}
 	}
 

@@ -10,9 +10,11 @@ import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.client.event.ScreenEvent;
 import net.neoforged.neoforge.client.gui.widget.ExtendedButton;
 
-@Mod("scwikiizer")
-@EventBusSubscriber(modid = "scwikiizer", value = Dist.CLIENT)
+@Mod(SecurityCraftWikiizer.MODID)
+@EventBusSubscriber(modid = SecurityCraftWikiizer.MODID, value = Dist.CLIENT)
 public class SecurityCraftWikiizer {
+	public static final String MODID = "scwikiizer";
+
 	@SubscribeEvent
 	public static void onInitScreen(ScreenEvent.Init.Pre event) {
 		if (event.getScreen() instanceof ChatScreen screen)
