@@ -9,7 +9,7 @@ version = '1.2'
 group = 'bl4ckscor3'
 
 base {
-	archivesName = 'scwikiizer-1.21'
+	archivesName = 'scwikiizer-1.21.1'
 }
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
@@ -19,7 +19,7 @@ minecraft.accessTransformers.file rootProject.file('src/main/resources/META-INF/
 
 runs {
     client {
-        workingDirectory project.file('run/client')
+        workingDirectory project.file('runs/client')
         systemProperty 'forge.logging.console.level', 'debug'
         modSource project.sourceSets.main
     }
@@ -35,8 +35,8 @@ repositories {
 }
 
 dependencies {
-	implementation 'net.neoforged:neoforge:21.0.0-beta'
-    implementation "curse.maven:security-craft-64760:5424870"
+	implementation 'net.neoforged:neoforge:21.1.65'
+    implementation "curse.maven:security-craft-64760:5779958"
 }
 
 tasks.named('jar', Jar).configure {

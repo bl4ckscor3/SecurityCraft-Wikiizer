@@ -304,12 +304,12 @@ public class WikiizerScreen extends Screen {
 
 		try {
 			//@formatter:off
-			List<String> lines = Arrays.asList(
+			List<String> lines = new ArrayList<>(Arrays.asList(
 					description,
 					"",
 					"## Recipe",
 					"",
-					recipe);
+					recipe));
 			//@formatter:on
 
 			addExtraInfo(currentPage, lines);
