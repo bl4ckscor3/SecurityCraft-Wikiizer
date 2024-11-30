@@ -2,7 +2,7 @@ plugins {
     id 'java-library'
     id 'eclipse'
     id 'idea'
-    id 'net.neoforged.gradle.userdev' version '7.0.+'
+    id 'net.neoforged.gradle.userdev' version '7.0.165'
 }
 
 version = '1.2'
@@ -36,7 +36,7 @@ repositories {
 
 dependencies {
 	implementation 'net.neoforged:neoforge:21.1.65'
-    implementation "curse.maven:security-craft-64760:5779958"
+    implementation "curse.maven:security-craft-64760:5950155"
 }
 
 tasks.named('jar', Jar).configure {
