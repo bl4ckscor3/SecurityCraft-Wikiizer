@@ -23,12 +23,14 @@ public class ScreenshotUtil {
 	private ScreenshotUtil() {}
 
 	public static void grabScreenshot(File target) {
-		//takes a screenshot of the whole game screen
-		NativeImage img = Screenshot.takeScreenshot(Minecraft.getInstance().getMainRenderTarget());
+		NativeImage img = new NativeImage(0, 0, false);
 		int startX = -1;
 		int lastGreenX = -1;
 		int startY = -1;
 		int lastGreenY = -1;
+
+		//takes a screenshot of the whole game screen
+		Screenshot.takeScreenshot(Minecraft.getInstance().getMainRenderTarget(), img::copyFrom);
 
 		//the crafting grid texture has green corners. for one, to determine the area of the crafting grid (which is the only part of the image that is needed),
 		//but also so the corners can be removed and the resulting image will be fully transparent in those places
