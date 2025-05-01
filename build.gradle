@@ -44,7 +44,7 @@ repositories {
 }
 
 dependencies {
-    implementation "curse.maven:security-craft-64760:5950158"
+    implementation "curse.maven:security-craft-64760:6485077"
 }
 
 tasks.named('jar', Jar).configure {
