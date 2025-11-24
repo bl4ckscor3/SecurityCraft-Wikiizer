@@ -97,8 +97,8 @@ public class WikiizerScreen extends Screen {
 	}
 
 	@Override
-	public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-		super.render(guiGraphics, mouseX, mouseY, partialTick);
+	public void tick() {
+		super.tick();
 
 		if (isRunning) {
 			if (currentPageIndex >= SCManualItem.PAGES.size()) {
@@ -107,8 +107,6 @@ public class WikiizerScreen extends Screen {
 			}
 			else {
 				SCManualPage currentPage = SCManualItem.PAGES.get(currentPageIndex);
-
-				renderRecipe(currentPage, guiGraphics, mouseX, mouseY, partialTick);
 
 				if (!currentPage.group().hasRecipeGrid()) {
 					createAndSavePage(currentPage);
@@ -127,6 +125,17 @@ public class WikiizerScreen extends Screen {
 					}
 				}
 			}
+		}
+	}
+
+	@Override
+	public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+		super.render(guiGraphics, mouseX, mouseY, partialTick);
+
+		if (isRunning && currentPageIndex < SCManualItem.PAGES.size()) {
+			SCManualPage currentPage = SCManualItem.PAGES.get(currentPageIndex);
+
+			renderRecipe(currentPage, guiGraphics, mouseX, mouseY, partialTick);
 		}
 
 		guiGraphics.drawCenteredString(font, title, width / 2, 15, 0xFFFFFF);
