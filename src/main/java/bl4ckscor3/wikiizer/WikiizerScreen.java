@@ -26,7 +26,7 @@ import net.geforcemods.securitycraft.misc.ModuleType;
 import net.geforcemods.securitycraft.misc.PageGroup;
 import net.geforcemods.securitycraft.misc.SCManualPage;
 import net.geforcemods.securitycraft.util.Utils;
-import net.minecraft.DetectedVersion;
+import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -51,7 +51,7 @@ import net.neoforged.neoforge.client.gui.widget.ExtendedButton;
 
 public class WikiizerScreen extends Screen {
 	private static final String SC_VERSION = SecurityCraft.getVersion();
-	private static final String MC_VERSION = DetectedVersion.BUILT_IN.name();
+	private static final String MC_VERSION = SharedConstants.getCurrentVersion().name();
 	private static final File OUTPUT_FOLDER = new File(Minecraft.getInstance().gameDirectory, "scwikiizer");
 	private static final File RESOURCES_FOLDER = new File(OUTPUT_FOLDER, "resources");
 	private static final ResourceLocation CRAFTING_GRID_TEXTURE = ResourceLocation.fromNamespaceAndPath(SecurityCraftWikiizer.MODID, "textures/gui/crafting_grid.png");
