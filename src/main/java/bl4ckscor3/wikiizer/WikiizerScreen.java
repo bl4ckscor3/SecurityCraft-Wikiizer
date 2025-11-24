@@ -32,7 +32,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -51,7 +51,7 @@ import net.neoforged.neoforge.client.gui.widget.ExtendedButton;
 
 public class WikiizerScreen extends Screen {
 	private static final String SC_VERSION = SecurityCraft.getVersion();
-	private static final String MC_VERSION = DetectedVersion.BUILT_IN.getName();
+	private static final String MC_VERSION = DetectedVersion.BUILT_IN.name();
 	private static final File OUTPUT_FOLDER = new File(Minecraft.getInstance().gameDirectory, "scwikiizer");
 	private static final File RESOURCES_FOLDER = new File(OUTPUT_FOLDER, "resources");
 	private static final ResourceLocation CRAFTING_GRID_TEXTURE = ResourceLocation.fromNamespaceAndPath(SecurityCraftWikiizer.MODID, "textures/gui/crafting_grid.png");
@@ -149,7 +149,7 @@ public class WikiizerScreen extends Screen {
 			previousPageIndex = currentPageIndex;
 		}
 
-		guiGraphics.blit(RenderType::guiTextured, CRAFTING_GRID_TEXTURE, 100, 100, 0, 0, 126, 64, 126, 64);
+		guiGraphics.blit(RenderPipelines.GUI_TEXTURED, CRAFTING_GRID_TEXTURE, 100, 100, 0, 0, 126, 64, 126, 64);
 
 		for (SimpleItemStacksDisplay display : displays) {
 			display.render(guiGraphics);
