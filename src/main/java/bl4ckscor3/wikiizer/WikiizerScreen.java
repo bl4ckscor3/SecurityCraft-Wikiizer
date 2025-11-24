@@ -2,7 +2,6 @@ package bl4ckscor3.wikiizer;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -323,20 +322,12 @@ public class WikiizerScreen extends Screen {
 
 	private String saveRecipeGif(String title) {
 		String savePath = title.toLowerCase().replace(" ", "_") + ".gif";
-		File frameCache = new File(RESOURCES_FOLDER, savePath);
+		File gifOutput = new File(RESOURCES_FOLDER, savePath);
 
-		ScreenshotUtil.createGif(frameCache, new ArrayList<>(gifImageFiles));
+		ScreenshotUtil.createGif(gifOutput, new ArrayList<>(gifImageFiles));
 		isCreatingGif = false;
 		currentGroupItemIndex = 0;
 		gifImageFiles.clear();
-
-		try {
-			Files.deleteIfExists(frameCache.toPath());
-		}
-		catch (IOException e) {
-			e.printStackTrace();
-		}
-
 		return "resources/" + savePath;
 	}
 

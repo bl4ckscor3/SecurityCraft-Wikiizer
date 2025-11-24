@@ -84,7 +84,7 @@ public class ScreenshotUtil {
 			GifSequenceWriter writer = null;
 
 			try (ImageOutputStream output = new FileImageOutputStream(saveLocation)) {
-				BufferedImage first = ImageIO.read(gifParts.get(0));
+				BufferedImage first = ImageIO.read(gifParts.getFirst());
 
 				writer = new GifSequenceWriter(output, first.getType(), 1000, true);
 
