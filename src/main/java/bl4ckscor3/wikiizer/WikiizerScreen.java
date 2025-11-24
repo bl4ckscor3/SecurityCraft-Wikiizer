@@ -279,8 +279,11 @@ public class WikiizerScreen extends Screen {
 			recipe = Utils.localize("gui.securitycraft:scManual.recipe." + BuiltInRegistries.ITEM.getKey(currentPage.item()).getPath()).getString();
 		else if (!isCreatingGif)
 			recipe = "![Recipe](" + createRecipeScreenshot(currentPage, title) + ")";
-		else
+		else {
+			//Do not remove this, it slows down the program enough to not cause IO errors
+			System.out.println(gifImageFiles);
 			recipe = "![Recipe](" + saveRecipeGif(title) + ")";
+		}
 
 		pages.add("- [[" + title + "|" + title + "]]");
 
