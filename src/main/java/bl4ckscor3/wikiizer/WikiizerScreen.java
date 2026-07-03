@@ -27,19 +27,20 @@ import net.geforcemods.securitycraft.misc.PageGroup;
 import net.geforcemods.securitycraft.misc.SCManualPage;
 import net.geforcemods.securitycraft.util.Utils;
 import net.minecraft.SharedConstants;
-import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.Util;
 import net.minecraft.util.context.ContextMap;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.crafting.display.RecipeDisplay;
 import net.minecraft.world.item.crafting.display.ShapedCraftingRecipeDisplay;
 import net.minecraft.world.item.crafting.display.ShapelessCraftingRecipeDisplay;
@@ -54,7 +55,7 @@ public class WikiizerScreen extends Screen {
 	private static final String MC_VERSION = SharedConstants.getCurrentVersion().name();
 	private static final File OUTPUT_FOLDER = new File(Minecraft.getInstance().gameDirectory, "scwikiizer");
 	private static final File RESOURCES_FOLDER = new File(OUTPUT_FOLDER, "resources");
-	private static final ResourceLocation CRAFTING_GRID_TEXTURE = ResourceLocation.fromNamespaceAndPath(SecurityCraftWikiizer.MODID, "textures/gui/crafting_grid.png");
+	private static final Identifier CRAFTING_GRID_TEXTURE = Identifier.fromNamespaceAndPath(SecurityCraftWikiizer.MODID, "textures/gui/crafting_grid.png");
 	private final List<String> pages = new ArrayList<>();
 	private boolean isRunning = false;
 	private int previousPageIndex = 0;
@@ -82,7 +83,7 @@ public class WikiizerScreen extends Screen {
 	protected void init() {
 		super.init();
 
-		addRenderableWidget(new ExtendedButton(5, 5, 20, 20, Component.literal("<-"), b -> Minecraft.getInstance().setScreen(null)));
+		addRenderableWidget(new ExtendedButton(5, 5, 20, 20, Component.literal("<-"), b -> Minecraft.getInstance().gui.setScreen(null)));
 		startStopButton = addRenderableWidget(new ExtendedButton(30, 5, 50, 20, Component.literal("Start"), b -> changeRunningStatus(!isRunning)));
 
 		for (int i = 0; i < 3; i++) {
@@ -129,19 +130,19 @@ public class WikiizerScreen extends Screen {
 	}
 
 	@Override
-	public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-		super.render(guiGraphics, mouseX, mouseY, partialTick);
+	public void extractRenderState(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick) {
+		super.extractRenderState(guiGraphics, mouseX, mouseY, partialTick);
 
 		if (isRunning && currentPageIndex < SCManualItem.PAGES.size()) {
 			SCManualPage currentPage = SCManualItem.PAGES.get(currentPageIndex);
 
-			renderRecipe(currentPage, guiGraphics, mouseX, mouseY, partialTick);
+			renderRecipe(currentPage, guiGraphics);
 		}
 
-		guiGraphics.drawCenteredString(font, title, width / 2, 15, 0xFFFFFF);
+		guiGraphics.centeredText(font, title, width / 2, 15, 0xFFFFFF);
 	}
 
-	private void renderRecipe(SCManualPage currentPage, GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+	private void renderRecipe(SCManualPage currentPage, GuiGraphicsExtractor guiGraphics) {
 		if (previousPageIndex != currentPageIndex) {
 			if (!currentPage.hasRecipeDescription())
 				populateRecipeField(currentPage);
@@ -235,7 +236,13 @@ public class WikiizerScreen extends Screen {
 				}
 
 				recipe = Arrays.asList(Util.make(new SlotDisplay[9], array -> Arrays.fill(array, Empty.INSTANCE)));
-				recipeStacks.forEach((i, stackArray) -> recipe.set(i, new SlotDisplay.Composite(Arrays.stream(stackArray).map(stack -> stack == null ? Empty.INSTANCE : new SlotDisplay.ItemStackSlotDisplay(stack)).toList())));
+				recipeStacks.forEach(
+					(i, stackArray) -> recipe.set(i, new SlotDisplay.Composite(
+						Arrays.stream(stackArray)
+							.map(stack -> stack == null
+								? Empty.INSTANCE
+								: new SlotDisplay.ItemStackSlotDisplay(ItemStackTemplate.fromStack(stack))).toList())
+					));
 			}
 		});
 

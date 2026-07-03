@@ -14,9 +14,9 @@ import org.apache.logging.log4j.Logger;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.platform.NativeImage;
 
-import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Screenshot;
+import net.minecraft.util.Util;
 
 public class ScreenshotUtil {
 	private static final Logger LOGGER = LogManager.getLogger();
@@ -24,7 +24,7 @@ public class ScreenshotUtil {
 	private ScreenshotUtil() {}
 
 	public static void grabScreenshot(File target) {
-		RenderTarget framebuffer = Minecraft.getInstance().getMainRenderTarget();
+		RenderTarget framebuffer = Minecraft.getInstance().gameRenderer.mainRenderTarget();
 		NativeImage img = new NativeImage(framebuffer.width, framebuffer.height, false);
 
 		//takes a screenshot of the whole game screen

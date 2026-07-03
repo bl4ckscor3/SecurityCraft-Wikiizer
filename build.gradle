@@ -2,21 +2,20 @@ plugins {
     id 'java-library'
     id 'eclipse'
     id 'idea'
-	id 'net.neoforged.moddev' version '2.0.107'
+	id 'net.neoforged.moddev' version '2.0.141'
 }
 
 version = '1.2'
 group = 'bl4ckscor3'
 
 base {
-	archivesName = 'scwikiizer-1.21.10'
+	archivesName = 'scwikiizer-26.2'
 }
 
-java.toolchain.languageVersion = JavaLanguageVersion.of(21)
-println "Java: ${System.getProperty 'java.version'}, JVM: ${System.getProperty 'java.vm.version'} (${System.getProperty 'java.vendor'}), Arch: ${System.getProperty 'os.arch'}"
+java.toolchain.languageVersion = JavaLanguageVersion.of(25)
 
 neoForge {
-	version = "21.10.55-beta"
+	version = "26.2.0.7-beta"
 
 	runs {
 		client {
@@ -44,7 +43,7 @@ repositories {
 }
 
 dependencies {
-    implementation "curse.maven:security-craft-64760:7148579"
+    implementation "curse.maven:security-craft-64760:8336507"
 }
 
 tasks.named('jar', Jar).configure {
@@ -64,7 +63,7 @@ jar.finalizedBy('reobfJar')
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
-	options.release = 21
+	options.release = 25
 }
 
 idea {

@@ -3,7 +3,7 @@ package bl4ckscor3.wikiizer;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.world.item.ItemStack;
 
 public class SimpleItemStacksDisplay {
@@ -17,11 +17,11 @@ public class SimpleItemStacksDisplay {
 		this.y = y;
 	}
 
-	public void render(GuiGraphics guiGraphics) {
+	public void render(GuiGraphicsExtractor guiGraphics) {
 		if (stacks.isEmpty() || currentRenderingStack < 0 || currentRenderingStack >= stacks.size())
 			return;
 
-		guiGraphics.renderItem(stacks.get(currentRenderingStack), x, y);
+		guiGraphics.item(stacks.get(currentRenderingStack), x, y);
 		changeRenderingStack(1);
 	}
 

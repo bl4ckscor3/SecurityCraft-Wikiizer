@@ -18,6 +18,6 @@ public class SecurityCraftWikiizer {
 	@SubscribeEvent
 	public static void onInitScreen(ScreenEvent.Init.Pre event) {
 		if (event.getScreen() instanceof ChatScreen screen)
-			screen.addRenderableWidget(new ExtendedButton(5, 5, 20, 20, Component.literal("W"), b -> Minecraft.getInstance().setScreen(new WikiizerScreen())));
+			screen.addRenderableWidget(new ExtendedButton(5, 5, 20, 20, Component.literal("W"), b -> Minecraft.getInstance().gui.setScreen(new WikiizerScreen())));
 	}
 }
